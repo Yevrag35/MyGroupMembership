@@ -79,7 +79,7 @@ namespace MG.Membership
                     CreateNoWindow = true
                 }
             };
-            var lines = new List<string>(50);
+            var lines = new List<string>(100);
             proc.Start();
             while (!proc.StandardOutput.EndOfStream)
             {
