@@ -33,23 +33,31 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MG.Posh.Extensions, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MG.Posh.Extensions.1.3.0\lib\net452\MG.Posh.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Repos\GetMyGroups\GetMyGroups\System.Management.Automation.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\Microsoft.PowerShell.5.ReferenceAssemblies.1.1.0\lib\net4\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetMyGroups.cs" />
+    <Compile Include="GroupType.cs" />
+    <Compile Include="MyGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringParser.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <None Include="MyGroupMembership\MG.Membership.GroupMembership.Format.ps1xml" />
     <None Include="MyGroupMembership\MyGroupMembership.psd1" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

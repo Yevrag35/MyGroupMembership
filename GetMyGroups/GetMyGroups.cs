@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Posh.Extensions.Bound;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace MG.Membership
 {
     [Cmdlet(VerbsCommon.Get, "MyGroupMembership", ConfirmImpact = ConfirmImpact.None)]
     [Alias("whoami")]
-    [OutputType(typeof(GroupMembership))]
+    [OutputType(typeof(MyGroup))]
     public class GetMyGroups : PSCmdlet
     {
         [Parameter(Mandatory = false, Position = 0)]
@@ -20,42 +21,34 @@ namespace MG.Membership
         protected override void ProcessRecord()
         {
             string[] ts = null;
-            if (Type != null)
+            if (this.ContainsParameter(x => x.Type))
             {
                 ts = new string[Type.Length];
                 for (int i1 = 0; i1 < Type.Length; i1++)
                 {
-                    var t = Type[i1];
+                    GroupType t = Type[i1];
                     ts[i1] = ReadEnumValue(t);
                 }
             }
 
             base.ProcessRecord();
-            string[] processed = ProcessStringOutput();
-            var tempList = new List<GroupMembership>(processed.Length / 4);
-            for (int i = 0; i < processed.Length; i+=4)
+            string[] processed = this.ProcessStringOutput();
+            string[][] linesList = new string[processed.Length / 4][];
+            for (int i = 0; i < (processed.Length / 4); i++)
             {
-                var col = new List<SpecialItem>(4);
-                var one = processed[i+1];
-                var si = new SpecialItem(one);
-                if (ts != null && !ts.Contains(si.Value))
-                    continue;
-
-                else
-                    col.Add(si);
-
-                var two = processed[i];
-                col.Add(new SpecialItem(two));
-                var three = processed[i + 2];
-                col.Add(new SpecialItem(three));
-                var four = processed[i + 3];
-                col.Add(new SpecialItem(four));
-
-                var group = new GroupMembership(col);
-                tempList.Add(group);
+                linesList[i] = new string[4];
+                linesList[i][0] = processed[(i * 4)];
+                linesList[i][1] = processed[(i * 4) + 1];
+                linesList[i][2] = processed[(i * 4) + 2];
+                linesList[i][3] = processed[(i * 4) + 3];
             }
-            IEnumerable<GroupMembership> ien = tempList.OrderBy(x => x.GroupName);
-            WriteObject(ien.OrderBy(x => x.Type), true);
+
+            IEnumerable<MyGroup> allGroups = MyGroup.CreateFromLines(linesList);
+            if (this.ContainsParameter(x => x.Type))
+            {
+                allGroups = allGroups.Where(x => ts.Contains(x.Type));
+            }
+            base.WriteObject(allGroups, true);
         }
 
         private protected string[] ProcessStringOutput()
@@ -71,20 +64,15 @@ namespace MG.Membership
                     CreateNoWindow = true
                 }
             };
+            var lines = new List<string>(50);
             proc.Start();
-            while (!proc.HasExited)
+            while (!proc.StandardOutput.EndOfStream)
             {
-                Thread.Sleep(200);
+                string oneLine = proc.StandardOutput.ReadLine();
+                if (!string.IsNullOrWhiteSpace(oneLine))
+                    lines.Add(oneLine);
             }
-            var output = proc.StandardOutput.ReadToEnd();
-
-            string[] strs = output.Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            var outArr = new string[strs.Length - 2];
-            for (int i = 2; i < strs.Length; i++)
-            {
-                outArr[i-2] = strs[i];
-            }
-            return outArr;
+            return lines.Skip(2).ToArray();
         }
 
         private string ReadEnumValue(GroupType t)
@@ -101,71 +89,5 @@ namespace MG.Membership
         public string Value => _val;
 
         public ValueAttribute(string val) => _val = val;
-    }
-
-    public enum GroupType : int
-    {
-        [Value("Well-known group")]
-        WellKnown = 0,
-
-        [Value("Alias")]
-        Alias = 1,
-
-        [Value("Group")]
-        Group = 2,
-
-        [Value("Label")]
-        Label = 3
-    }
-
-    internal class SpecialItem
-    {
-        public string Key;
-        public string Value;
-        public SpecialItem(string go)
-        {
-            string[] split = go.Split(new string[1] { ":" }, StringSplitOptions.None);
-            Key = split[0];
-            Value = split[1].Trim();
-        }
-    }
-
-    public sealed class GroupMembership
-    {
-        private string _n;
-        private string _t;
-        private string _sid;
-        private string[] _atts;
-
-        public string GroupName => _n ?? null;
-        public string Type => _t ?? null;
-        public string SID => _sid ?? null;
-        public string[] Attributes => _atts ?? null;
-
-        internal GroupMembership(List<SpecialItem> items)
-        {
-            if (items.Count != 4)
-                throw new ArgumentException("If you specify any special items, there must be 4 of them!");
-
-            for (int i = 0; i < items.Count; i++)
-            {
-                var item = items[i];
-                switch (item.Key)
-                {
-                    case "Group Name":
-                        _n = item.Value;
-                        break;
-                    case "Type":
-                        _t = item.Value;
-                        break;
-                    case "SID":
-                        _sid = item.Value;
-                        break;
-                    default:
-                        _atts = item.Value.Split(new string[1] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                        break;
-                }
-            }
-        }
     }
 }
