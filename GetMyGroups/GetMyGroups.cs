@@ -1,11 +1,11 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Membership.Internal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
-using System.Threading;
 
 namespace MG.Membership
 {
@@ -14,22 +14,37 @@ namespace MG.Membership
     [OutputType(typeof(MyGroup))]
     public class GetMyGroups : PSCmdlet
     {
+        private IReadOnlyDictionary<string, GroupType> GroupTypes { get; } = new GroupDictionary();
+        private GroupType[] _specifiedTypes;
+        private List<string> _types { get; } = new List<string>();
+
         [Parameter(Mandatory = false, Position = 0)]
         [Alias("t")]
-        public GroupType[] Type { get; set; }
+        public GroupType[] Type
+        {
+            get => _specifiedTypes;
+            set
+            {
+                _specifiedTypes = value;
+                foreach (KeyValuePair<string, GroupType> kvp in this.GroupTypes)
+                {
+                    foreach (GroupType gt in value)
+                    {
+                        if (kvp.Value == gt)
+                        {
+                            _types.Add(kvp.Key);
+                        }
+                    }
+                }
+            }
+        }
+
+        protected override void BeginProcessing()
+        {
+        }
 
         protected override void ProcessRecord()
         {
-            string[] ts = null;
-            if (this.ContainsParameter(x => x.Type))
-            {
-                ts = new string[Type.Length];
-                for (int i1 = 0; i1 < Type.Length; i1++)
-                {
-                    GroupType t = Type[i1];
-                    ts[i1] = ReadEnumValue(t);
-                }
-            }
 
             base.ProcessRecord();
             string[] processed = this.ProcessStringOutput();
@@ -43,10 +58,10 @@ namespace MG.Membership
                 linesList[i][3] = processed[(i * 4) + 3];
             }
 
-            IEnumerable<MyGroup> allGroups = MyGroup.CreateFromLines(linesList);
+            IEnumerable<MyGroup> allGroups = MyGroup.CreateFromLines(linesList, this.GroupTypes);
             if (this.ContainsParameter(x => x.Type))
             {
-                allGroups = allGroups.Where(x => ts.Contains(x.Type));
+                allGroups = allGroups.Where(x => _specifiedTypes.Contains(x.Type));
             }
             base.WriteObject(allGroups, true);
         }
@@ -74,20 +89,5 @@ namespace MG.Membership
             }
             return lines.Skip(2).ToArray();
         }
-
-        private string ReadEnumValue(GroupType t)
-        {
-            FieldInfo fi = t.GetType().GetField(t.ToString());
-            ValueAttribute att = ((fi.GetCustomAttributes(typeof(ValueAttribute), false)) as ValueAttribute[])[0];
-            return att.Value;
-        }
-    }
-
-    internal class ValueAttribute : Attribute
-    {
-        private string _val;
-        public string Value => _val;
-
-        public ValueAttribute(string val) => _val = val;
     }
 }
