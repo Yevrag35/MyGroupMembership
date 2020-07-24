@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MyGroupMembership-Standard": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "commandLineArgs": "-NoExit -NoLogo -Command \"Import-Module .\\MyGroupMembership-Standard.dll\""
+    }
+  }
+}
