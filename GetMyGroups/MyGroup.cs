@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MG.Membership
 {
-    public class MyGroup
+    public class MyGroup : IComparable<MyGroup>
     {
         public string GroupName { get; }
         public GroupType Type { get; }
@@ -20,6 +20,24 @@ namespace MG.Membership
             this.Type = type;
             this.SID = sid;
             this.Attributes = atts;
+        }
+
+        public int CompareTo(MyGroup other)
+        {
+            int final;
+            if (null != other)
+            {
+                final = other.Type.CompareTo(this.Type);
+                if (final == 0)
+                {
+                    final = StringComparer.CurrentCultureIgnoreCase.Compare(other.GroupName, this.GroupName);
+                }
+            }
+            else
+            {
+                final = 1;
+            }
+            return final;
         }
 
         public static MyGroup CreateFromLines(string[] lines, IReadOnlyDictionary<string, GroupType> groupTypes)
