@@ -87,6 +87,14 @@ namespace MG.Membership
             _list.Add(_getKey(group), group);
         }
 
+        public IEnumerable<MyGroup> GroupsOfType(params GroupType[] types)
+        {
+            if (types == null || types.Length <= 0)
+                return null;
+
+            return _list.Values.Where(x => types.Contains(x.Type));
+        }
+
         public IEnumerator<MyGroup> GetEnumerator()
         {
             return _list.Values.GetEnumerator();
