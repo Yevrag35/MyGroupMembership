@@ -53,6 +53,7 @@
     <Compile Include="GroupType.cs" />
     <Compile Include="Internal\GroupDictionary.cs" />
     <Compile Include="MyGroup.cs" />
+    <Compile Include="MyGroupCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internal\StringParser.cs" />
   </ItemGroup>

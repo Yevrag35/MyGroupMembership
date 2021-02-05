@@ -72,14 +72,14 @@ namespace MG.Membership
             return new MyGroup(name, type, sid, atts);
         }
 
-        public static MyGroup[] CreateFromLines(string[][] linesList, IReadOnlyDictionary<string, GroupType> groupTypes)
+        public static MyGroupCollection CreateFromLines(string[][] linesList, IReadOnlyDictionary<string, GroupType> groupTypes)
         {
             MyGroup[] groupArr = new MyGroup[linesList.Length];
             for (int i = 0; i < linesList.Length; i++)
             {
                 groupArr[i] = CreateFromLines(linesList[i], groupTypes);
             }
-            return groupArr;
+            return new MyGroupCollection(groupArr);
         }
     }
 }
