@@ -19,6 +19,10 @@ namespace MG.Membership
         private List<string> _types { get; } = new List<string>();
 
         [Parameter(Mandatory = false, Position = 0)]
+        [Alias("Name")]
+        public string[] GroupName { get; set; }
+
+        [Parameter(Mandatory = false, Position = 1)]
         [Alias("t")]
         public GroupType[] Type
         {
