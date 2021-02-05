@@ -23,6 +23,10 @@ namespace MG.Membership.Internal
             string[] split = line.Item2.Split(new string[1] { ":" }, StringSplitOptions.None);
 
             string[] atts = split.LastOrDefault().Split(new string[1] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = atts.Length - 1; i >= 0; i--)
+            {
+                atts[i] = atts[i].Trim();
+            }
 
             return atts;
 
