@@ -28,27 +28,7 @@ namespace MG.Membership
         #endregion
 
         #region INDEXERS
-        public MyGroup this[int index]
-        {
-            get
-            {
-                if (index >= 0)
-                    return _list.Values[index];
-
-                else
-                {
-                    int goHere = _list.Count + index;
-                    return goHere >= 0 ? _list.Values[goHere] : default;
-                }
-            }
-        }
-        public MyGroup this[string groupName]
-        {
-            get
-            {
-                return _list.Values.FirstOrDefault(x => x.GroupName.Equals(groupName, StringComparison.CurrentCultureIgnoreCase));
-            }
-        }
+        public MyGroup this[int index] => _list.Values[index];
 
         #endregion
 
@@ -58,18 +38,10 @@ namespace MG.Membership
         #endregion
 
         #region CONSTRUCTORS
-        public MyGroupCollection()
-            : this(0)
+        internal MyGroupCollection(params MyGroup[] groups)
         {
-        }
-        public MyGroupCollection(int capacity)
-        {
-            _list = new SortedList<(GroupType, string), MyGroup>(capacity, new MyGroupComparer());
+            _list = new SortedList<(GroupType, string), MyGroup>((groups?.Length).GetValueOrDefault(), new MyGroupComparer());
             _getKey = x => (x.Type, x.GroupName);
-        }
-        internal MyGroupCollection(MyGroup[] groups)
-            : this((groups?.Length).GetValueOrDefault())
-        {
             if (null != groups)
             {
                 foreach (MyGroup myGroup in groups)
@@ -82,7 +54,7 @@ namespace MG.Membership
         #endregion
 
         #region METHODS
-        internal void Add(MyGroup group)
+        private void Add(MyGroup group)
         {
             _list.Add(_getKey(group), group);
         }
