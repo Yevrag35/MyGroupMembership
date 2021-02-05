@@ -58,12 +58,17 @@ namespace MG.Membership
                 linesList[i][3] = processed[(i * 4) + 3];
             }
 
-            IEnumerable<MyGroup> allGroups = MyGroup.CreateFromLines(linesList, this.GroupTypes);
+            MyGroupCollection allGroups = MyGroup.CreateFromLines(linesList, this.GroupTypes);
             if (this.ContainsParameter(x => x.Type))
             {
-                allGroups = allGroups.Where(x => _specifiedTypes.Contains(x.Type));
+                IEnumerable<MyGroup> theseGroups = allGroups.GroupsOfType(this.Type);
+                base.WriteObject(theseGroups, true);
             }
-            base.WriteObject(allGroups, true);
+            else
+            {
+                base.WriteObject(allGroups, true);
+            }
+            
         }
 
         private protected string[] ProcessStringOutput()
