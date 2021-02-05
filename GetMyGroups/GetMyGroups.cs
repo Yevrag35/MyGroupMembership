@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Posh.Extensions.Filters;
 using MG.Membership.Internal;
 using System;
 using System.Collections.Generic;
@@ -45,6 +46,7 @@ namespace MG.Membership
 
         protected override void BeginProcessing()
         {
+
         }
 
         protected override void ProcessRecord()
@@ -62,17 +64,18 @@ namespace MG.Membership
                 linesList[i][3] = processed[(i * 4) + 3];
             }
 
-            MyGroupCollection allGroups = MyGroup.CreateFromLines(linesList, this.GroupTypes);
+            IEnumerable<MyGroup> allGroups = MyGroup.CreateFromLines(linesList, this.GroupTypes);
             if (this.ContainsParameter(x => x.Type))
             {
-                IEnumerable<MyGroup> theseGroups = allGroups.GroupsOfType(this.Type);
-                base.WriteObject(theseGroups, true);
+                allGroups = allGroups.Where(x => this.Type.Contains(x.Type));
             }
-            else
+
+            if (this.ContainsParameter(x => x.GroupName))
             {
-                base.WriteObject(allGroups, true);
+                allGroups = allGroups.FilterByWildcards(this.GroupName, x => x.GroupName);
             }
-            
+
+            base.WriteObject(allGroups, true);
         }
 
         private protected string[] ProcessStringOutput()
